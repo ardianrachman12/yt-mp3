@@ -1,6 +1,7 @@
 from flask import Flask, request, send_file, jsonify
 from download_mp3 import download_youtube_as_mp3 # Impor fungsi dari file sebelumnya
 import os, subprocess, stat
+from dotenv import load_dotenv
 
 load_dotenv()
 app = Flask(__name__)
