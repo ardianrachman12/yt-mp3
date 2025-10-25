@@ -1,0 +1,59 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+eggs/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Installer logs
+pip-log.txt
+pip-delete-this-file.txt
+
+# Unit test / coverage reports
+.coverage
+.tox/
+.pytest_cache/
+nosetests.xml
+
+# IDEs and editors
+.project
+.idea/
+.vscode/
+*.swp
+*.bak
+*.DS_Store
+Thumbs.db
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# OS-level caches
+.directory
+.pylint.d
+
+# Data and logs
+*.log
+*.sqlite3
+db.sqlite3
+
+# Credentials and sensitive data
+.env
+.flaskenv
+# Instaloader session file
+*.session
+
+# Jupyter Notebook files
+.ipynb_checkpoints
