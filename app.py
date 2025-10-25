@@ -4,6 +4,24 @@ import os
 
 app = Flask(__name__)
 
+# Deteksi apakah berjalan di Vercel
+is_vercel = os.environ.get("VERCEL", "0") == "1" or "vercel" in os.environ.get("PATH", "").lower()
+
+# Tambahkan path ke folder bin
+os.environ["PATH"] += os.pathsep + os.path.abspath("bin")
+
+if not is_vercel:
+    for file in ["bin/ffmpeg", "bin/ffprobe"]:
+        if os.path.exists(file):
+            try:
+                st = os.stat(file)
+                os.chmod(file, st.st_mode | stat.S_IEXEC)
+            except Exception as e:
+                print(f"[WARN] Gagal chmod {file}: {e}")
+                print(subprocess.getoutput("ffmpeg -version"))
+else:
+    print("[INFO] Jalankan di Vercel — skip chmod binary ffmpeg/ffprobe")
+
 @app.route('/download-mp3', methods=['GET'])
 def api_download_mp3():
     # Ambil URL dari parameter query (e.g., /download-mp3?url=...)
