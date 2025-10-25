@@ -75,6 +75,42 @@ def list_files():
             "message": str(e)
         }), 500
 
+@app.route('/clear-downloads', methods=['POST'])
+def clear_downloads():
+    """Endpoint untuk menghapus semua isi file di dalam folder temp_downloads secara manual."""
+    target_dir = "temp_downloads"
+    deleted_count = 0
+    errors = []
+
+    if not os.path.exists(target_dir):
+        return jsonify({
+            "status": "warning",
+            "message": f"Direktori '{target_dir}' tidak ditemukan. Tidak ada yang dihapus."
+        }), 200
+
+    # Iterasi melalui semua item di dalam folder
+    for item_name in os.listdir(target_dir):
+        item_path = os.path.join(target_dir, item_name)
+        
+        # Hanya hapus file biasa (bukan sub-folder)
+        if os.path.isfile(item_path):
+            try:
+                os.remove(item_path)
+                deleted_count += 1
+            except Exception as e:
+                # Log error spesifik jika gagal hapus
+                error_type = type(e).__name__
+                errors.append(f"Gagal menghapus {item_name}. Penyebab: {error_type}: {str(e)}")
+        # Jika ada sub-folder, kita abaikan saja.
+    
+    status = "ok" if not errors else "warning"
+
+    return jsonify({
+        "status": status,
+        "message": f"Operasi pembersihan selesai. {deleted_count} file berhasil dihapus.",
+        "errors": errors
+    }), 200
+
 @app.route('/download-mp3', methods=['GET'])
 def api_download_mp3():
     # Ambil URL dari parameter query (e.g., /download-mp3?url=...)
@@ -94,11 +130,17 @@ def api_download_mp3():
             # Bersihkan file setelah dikirim (CRITICAL di lingkungan cloud)
             @response.call_on_close
             def cleanup():
-                try:
-                    os.remove(downloaded_path)
-                    print(f"Cleanup: Menghapus file {downloaded_path}")
-                except Exception as e:
-                    print(f"Cleanup Error: Gagal menghapus file {downloaded_path}: {e}")
+                # Cek ulang, dan hapus dengan log error yang lebih detail
+                if os.path.exists(downloaded_path):
+                    try:
+                        os.remove(downloaded_path)
+                        print(f"Cleanup: File {downloaded_path} BERHASIL dihapus.")
+                    except Exception as e:
+                        # Log jenis error yang spesifik (misalnya PermissionError atau OSError)
+                        error_type = type(e).__name__
+                        print(f"Cleanup Error: Gagal menghapus file {downloaded_path}. Penyebab: {error_type}: {e}")
+                else:
+                    print(f"Cleanup: File {downloaded_path} sudah TIDAK ADA saat cleanup dipanggil.")
             
             return response
         except Exception as e:

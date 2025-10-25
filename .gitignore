@@ -57,3 +57,5 @@ db.sqlite3
 
 # Jupyter Notebook files
 .ipynb_checkpoints
+
+temp_downloads/
