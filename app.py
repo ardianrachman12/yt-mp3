@@ -43,6 +43,38 @@ def health_check():
     """Endpoint health check sederhana untuk layanan monitoring."""
     return jsonify({"status": "ok"}), 200
 
+@app.route('/list-files', methods=['GET'])
+def list_files():
+    """Endpoint untuk menampilkan isi folder temp_downloads (hanya untuk debugging)."""
+    target_dir = "temp_downloads"
+    try:
+        # Periksa apakah direktori ada
+        if not os.path.exists(target_dir):
+            return jsonify({
+                "directory": target_dir,
+                "exists": False,
+                "files": []
+            }), 200
+
+        # Ambil daftar file
+        files = os.listdir(target_dir)
+        
+        # Filter untuk menghapus file tersembunyi seperti .gitkeep
+        files = [f for f in files if not f.startswith('.')]
+
+        return jsonify({
+            "directory": target_dir,
+            "exists": True,
+            "file_count": len(files),
+            "files": files
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            "error": "Failed to list directory contents",
+            "message": str(e)
+        }), 500
+
 @app.route('/download-mp3', methods=['GET'])
 def api_download_mp3():
     # Ambil URL dari parameter query (e.g., /download-mp3?url=...)
@@ -52,17 +84,21 @@ def api_download_mp3():
         return jsonify({"error": "Parameter 'url' wajib diisi."}), 400
 
     # Panggil fungsi pengunduhan
-    downloaded_path = download_youtube_as_mp3(youtube_url, output_dir="temp_downloads")
+    downloaded_path = download_youtube_as_mp3(youtube_url)
     
     if downloaded_path:
         try:
             # Kirim file MP3 sebagai respons (API Service)
             response = send_file(downloaded_path, as_attachment=True, download_name=os.path.basename(downloaded_path))
             
-            # Bersihkan file setelah dikirim (penting untuk API)
+            # Bersihkan file setelah dikirim (CRITICAL di lingkungan cloud)
             @response.call_on_close
             def cleanup():
-                os.remove(downloaded_path)
+                try:
+                    os.remove(downloaded_path)
+                    print(f"Cleanup: Menghapus file {downloaded_path}")
+                except Exception as e:
+                    print(f"Cleanup Error: Gagal menghapus file {downloaded_path}: {e}")
             
             return response
         except Exception as e:
