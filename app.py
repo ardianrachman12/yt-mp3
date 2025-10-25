@@ -27,6 +27,22 @@ if not is_vercel:
 else:
     print("[INFO] Jalankan di Vercel — skip chmod binary ffmpeg/ffprobe")
 
+# --- ENDPOINTS HEALTH CHECK DAN ROOT UTAMA ---
+@app.route('/', methods=['GET'])
+def root_status():
+    """Endpoint root utama untuk memberikan status API dan petunjuk."""
+    return jsonify({
+        "status": "ok",
+        "service": "YouTube MP3 Downloader API",
+        "environment": APP_ENV,
+        "instructions": "Use /download-mp3?url=<youtube_url> to get the MP3 file."
+    }), 200
+
+@app.route('/health', methods=['GET'])
+def health_check():
+    """Endpoint health check sederhana untuk layanan monitoring."""
+    return jsonify({"status": "ok"}), 200
+
 @app.route('/download-mp3', methods=['GET'])
 def api_download_mp3():
     # Ambil URL dari parameter query (e.g., /download-mp3?url=...)
