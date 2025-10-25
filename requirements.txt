@@ -1,3 +1,5 @@
 yt-dlp
 imageio-ffmpeg
 flask
+gunicorn
+python-dotenv

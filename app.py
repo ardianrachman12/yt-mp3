@@ -2,7 +2,11 @@ from flask import Flask, request, send_file, jsonify
 from download_mp3 import download_youtube_as_mp3 # Impor fungsi dari file sebelumnya
 import os, subprocess, stat
 
+load_dotenv()
 app = Flask(__name__)
+
+APP_ENV = os.environ.get('FLASK_ENV', 'production')
+IS_LOCAL_DEV = (APP_ENV == 'development' or APP_ENV == 'local')
 
 # Deteksi apakah berjalan di Vercel
 is_vercel = os.environ.get("VERCEL", "0") == "1" or "vercel" in os.environ.get("PATH", "").lower()
@@ -54,4 +58,11 @@ if __name__ == '__main__':
     if not os.path.exists('temp_downloads'):
         os.makedirs('temp_downloads')
         
-    app.run(debug=True)
+    # Di lokal, jalankan dengan Flask development server
+    # Debug mode diaktifkan HANYA jika APP_ENV adalah 'development' atau 'local'.
+    print(f"Running in Environment: {APP_ENV}. Debug Mode: {IS_LOCAL_DEV}")
+    app.run(
+        host='0.0.0.0', 
+        port=os.environ.get('PORT', 5000), 
+        debug=IS_LOCAL_DEV
+    )
